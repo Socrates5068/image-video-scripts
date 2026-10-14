@@ -48,6 +48,7 @@ Script: [`image/convert_to_webp.ps1`](image/convert_to_webp.ps1)
 - Comprueba que el WebP exista, no esté vacío y pueda decodificarse antes de eliminar el original.
 
 La orientación EXIF se conserva como metadato cuando es compatible; FFmpeg no rota los píxeles automáticamente durante la conversión.
+Si falla la copia de metadatos, puede quedar un WebP generado junto al original. Como los archivos de salida existentes se omiten, revisa ese WebP antes de volver a ejecutar el script.
 
 ## Conversor de video
 
@@ -56,7 +57,7 @@ Script: [`video/convert_to_H265.ps1`](video/convert_to_H265.ps1)
 - Formatos de entrada: `.mp4`, `.mts`, `.mkv` y `.3gp`.
 - Salida: `nombre_h265.mp4` junto al video original. Omite nombres que ya terminen en `_h265` y salidas que ya existan.
 - Codifica video con NVENC HEVC (`hevc_nvenc`, preset `p5`) y audio con Opus, estéreo, a 128 kb/s y 48 kHz.
-- Usa tasas de bits distintas según la frecuencia de cuadros: hasta 45 FPS, 5.000 kb/s (máximo 7.000 kb/s); por encima de 45 FPS, 10.000 kb/s (máximo 12.000 kb/s).
+- Usa tasas de bits distintas según la frecuencia de cuadros: menos de 45 FPS, 5.000 kb/s (máximo 7.000 kb/s); 45 FPS o más, 10.000 kb/s (máximo 12.000 kb/s).
 - Desentrelaza fuentes que FFprobe identifica como entrelazadas.
 - Intenta conservar capítulos y metadatos compatibles. También intenta recuperar la fecha de grabación de ciertos metadatos Sony o QuickTime y la escribe en la salida cuando está disponible.
 - Valida que la salida contenga video HEVC, audio Opus y duración válida; antes de borrar el origen, también intenta decodificar el archivo completo.
