@@ -23,7 +23,7 @@ if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
     throw "ERROR: FFmpeg no está instalado o no está en el PATH."
 }
 
-$FFmpeg = $FFmpegCommand.Source
+$FFmpeg = (Get-Command ffmpeg -ErrorAction Stop).Source
 
 if (-not (Get-Command exiftool -ErrorAction SilentlyContinue)) {
     throw "ERROR: ExifTool no está instalado o no está en el PATH."
