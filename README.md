@@ -20,14 +20,12 @@ Ejecuta el script desde la carpeta que contiene los archivos que quieres procesa
 
 ```powershell
 Set-Location "D:\Media\Fotos"
-& "D:\Socrates\Documents\scripts\image-video-scripts\image\convert_to_webp.ps1"
 ```
 
 Para videos:
 
 ```powershell
 Set-Location "D:\Media\Videos"
-& "D:\Socrates\Documents\scripts\image-video-scripts\video\convert_to_H265.ps1"
 ```
 
 Si la política de ejecución de PowerShell impide ejecutar el script, puedes invocarlo para esta sesión sin cambiar la configuración permanente:
