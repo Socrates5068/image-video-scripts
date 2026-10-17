@@ -19,3 +19,5 @@ Get-ChildItem -Path . -Include *.mp4, *.mts, *.mkv, *.3gp -Recurse | ForEach-Obj
         (Get-Item $outputName).LastWriteTime = $_.LastWriteTime
     }
 }
+
+Write-Host "¡Conversión masiva de videos completada!" -ForegroundColor Green
