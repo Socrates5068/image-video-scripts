@@ -191,36 +191,65 @@ function Test-ValidOutput {
 function Get-RecordingDateUTC {
     param([string]$SourcePath)
 
-    # Algunas camaras Sony guardan la fecha en la estructura H264.
+    # Intentar obtener la fecha de grabación de algunas cámaras Sony.
     $SonyDate = Get-ExifValue -Path $SourcePath -Tag "H264:DateTimeOriginal"
 
     if ($SonyDate) {
-        # Ejemplo: 2021:05:13 11:53:30-04:00
-        if ($SonyDate -match '(\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2})([+-]\d{2}:\d{2})$') {
-            $DatePart = $Matches[1]
-            $OffsetPart = $Matches[2]
 
-            $ParsedDate = [DateTimeOffset]::ParseExact(
-                "$DatePart$OffsetPart",
-                "yyyy:MM:dd HH:mm:sszzz",
-                [Globalization.CultureInfo]::InvariantCulture
-            )
-
-            return $ParsedDate.UtcDateTime.ToString(
-                "yyyy:MM:dd HH:mm:ss",
-                [Globalization.CultureInfo]::InvariantCulture
-            )
+        # Ignorar fechas vacías, nulas o inválidas.
+        if ($SonyDate -match '^0{4}:0{2}:0{2}') {
+            return $null
         }
 
-        # Fecha sin zona horaria: no inventar una conversion UTC.
+        # Ejemplo: 2021:05:13 11:53:30-04:00
+        if ($SonyDate -match '^(\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2})([+-]\d{2}:\d{2})$') {
+
+            try {
+                $DatePart = $Matches[1]
+                $OffsetPart = $Matches[2]
+
+                $ParsedDate = [DateTimeOffset]::ParseExact(
+                    "$DatePart$OffsetPart",
+                    "yyyy:MM:dd HH:mm:sszzz",
+                    [Globalization.CultureInfo]::InvariantCulture
+                )
+
+                return $ParsedDate.UtcDateTime.ToString(
+                    "yyyy:MM:dd HH:mm:ss",
+                    [Globalization.CultureInfo]::InvariantCulture
+                )
+            }
+            catch {
+                return $null
+            }
+        }
+
+        # Si la fecha no incluye zona horaria, no inventar una conversión UTC.
         return $null
     }
 
-    # Para MP4 de Android, usar la fecha QuickTime original.
+    # Para MP4 de Android, consultar la fecha QuickTime.
     $QuickTimeDate = Get-ExifValue -Path $SourcePath -Tag "QuickTime:CreateDate"
 
-    if ($QuickTimeDate -match '^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$') {
-        return $QuickTimeDate
+    if (
+        $QuickTimeDate -and
+        $QuickTimeDate -match '^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$' -and
+        $QuickTimeDate -notmatch '^0{4}:0{2}:0{2}'
+    ) {
+        try {
+            $ParsedDate = [DateTime]::ParseExact(
+                $QuickTimeDate,
+                "yyyy:MM:dd HH:mm:ss",
+                [Globalization.CultureInfo]::InvariantCulture
+            )
+
+            if ($ParsedDate.Year -ge 1) {
+                return $QuickTimeDate
+            }
+        }
+        catch {
+            return $null
+        }
     }
 
     return $null
